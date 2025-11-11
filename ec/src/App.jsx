@@ -5,6 +5,7 @@ import Page2 from './pages/Page2'
 import Home from './pages/Home'
 import Productdetails from './pages/Productdetails'
 import Admin from './pages/admin'
+import EditProduct from './pages/EditProduct'
 
 const App = () => {
   const linkClasses = "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300";
@@ -40,12 +41,13 @@ const App = () => {
     //     </div>
     //   </nav>
 
-      <main className="  px-4 bg-white w-screen min-h-screen ">
+      <main className="   bg-white w-screen min-h-screen overflow-x-hidden">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/page2" element={<Page2 />} />
           <Route path="/productdetails/:id" element={<Productdetails />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/editProducts/:id" element={<EditProduct/>} />
         </Routes>
       </main>
     // </div>

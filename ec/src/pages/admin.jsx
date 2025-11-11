@@ -82,7 +82,7 @@ const Admin = () => {
             <textarea
               id="description"
               rows="3"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
