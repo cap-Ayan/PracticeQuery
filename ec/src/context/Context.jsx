@@ -16,12 +16,13 @@ export const ShopContextProvider = ({ children }) => {
 
         // ✅ fetch from fakestoreapi (limit optional)
         const url = limit
-          ? `https://fakestoreapi.com/products?limit=${limit}`
-          : `https://fakestoreapi.com/products`;
+          ? `http://localhost:5000/api/products/getProducts?limit=${limit}`
+          : `http://localhost:5000/api/products/getProducts`;
 
         const res = await fetch(url);
         const json = await res.json();
-        setCartItems(json);
+        
+        setCartItems(json.products);
       } catch (err) {
         console.log(err);
       }

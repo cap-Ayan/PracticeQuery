@@ -1,14 +1,28 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useShopContext } from "../context/Context";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Home = () => {
   const products = useShopContext();
   const [page, setPage] = useState(1);
   const [limitPerPage,setLimitPerPage]=useState(5);
   const location=useLocation();
+  const navigate =useNavigate();
 
-  
+  const deleteItem=(id)=>{
+    try {
+      axios.delete(`http://localhost:5000/api/products/deleteProduct/${id}`).then((res)=>{
+        return res.json;
+      }).then((data)=>{
+        alert("Item deleted successfully");
+        window.location.reload();
+      });
+    } catch (error) {
+      alert("Error deleting item");
+      console.error(error);
+    }
+  }
 
   useEffect(()=>{
      const params= new URLSearchParams(location.search);
@@ -39,7 +53,7 @@ const Home = () => {
       {/* Show products */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {currentItems.map((item) => (
-          <div key={item.id} className="bg-white rounded-lg shadow-md p-3">
+          <div key={item._id} className="bg-white rounded-lg shadow-md p-3" onClick={()=>navigate(`/productdetails/${item._id}`)}>
           <img 
             src={item.image} 
             alt={item.title}
@@ -49,17 +63,25 @@ const Home = () => {
           <p className="text-sm text-gray-600 mb-2 truncate">{item.description}</p>
           <div className="flex justify-between items-center">
             <div className="flex items-center text-black/80">
-  {Array.from({ length: 5 }, (_, i) => (
+  {item.rating && Array.from({ length: 5 }, (_, i) => (
     <span key={i} className={`mr-[0.5] ${i < Math.round(item.rating.rate) ? 'text-yellow-500' : 'text-gray-300'}`}>
       ★
     </span>
   ))}
-  <span className="ml-1 text-sm text-gray-600">({item.rating.count})</span>
+  {item.rating && <span className="ml-1 text-sm text-gray-600">({item.rating.count})</span>}
 </div>
-            <span className="text-blue-600 font-bold">${item.price}</span>
-            <button className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm">
-              Add to Cart
-            </button>
+            <div className="flex flex-col items-end">
+              <span className="text-blue-600 font-bold">${item.price}</span>
+              <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mt-1">
+                Add to Cart
+              </button>
+              <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm mt-1" onClick={(e)=>{
+                e.stopPropagation();
+                deleteItem(item._id);
+              }}>
+                Remove
+              </button>
+            </div>
           </div>
         </div>
         ))}
