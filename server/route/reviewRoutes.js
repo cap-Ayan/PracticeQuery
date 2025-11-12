@@ -8,4 +8,7 @@ router.post('/addReview/:productId', reviewController.addReview);
 
 router.get('/getReviews/:productId', reviewController.getReviewsByProduct);
 
+router.post('/getFilterRating/:productId', reviewController.getFilterratingByProduct);
+
+
 module.exports = router;

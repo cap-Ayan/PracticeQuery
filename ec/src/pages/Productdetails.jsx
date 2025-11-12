@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -9,6 +10,28 @@ const Productdetails = () => {
   const [feedback, setFeedback] = useState("");
   const [avgRating, setAvgRating] = useState(0);
   const [ratingBreakdown, setRatingBreakdown] = useState({});
+  const [filterReviews, setfilterReviews] = useState([]);
+
+
+  const filterStarReviews = async (rating) => {
+     try {
+      console.log(rating)
+      const res=await fetch(`http://localhost:5000/api/reviews/getFilterRating/${id}`,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({rating})
+      });
+      const data = await res.json();
+      if (data.success) {
+        setfilterReviews(data.reviews);
+        
+      }
+     } catch (error) {
+      console.log("Error filtering reviews",error)
+     }
+   };
 
   // Fetch product + reviews
   useEffect(() => {
@@ -21,6 +44,9 @@ const Productdetails = () => {
         console.error("Error fetching product details:", error);
       }
     };
+
+   
+
 
     const fetchReviews = async () => {
       try {
@@ -129,7 +155,7 @@ const Productdetails = () => {
             {Object.entries(ratingBreakdown)
               .reverse()
               .map(([stars, count]) => (
-                <div key={stars} className="flex items-center gap-2">
+                <div key={stars} className="flex items-center gap-2 cursor-pointer" onClick={()=>{filterStarReviews(stars)}}>
                   <p className="w-28 text-sm font-semibold text-gray-700 flex items-center ">
                     {Array.from({ length: Number(stars) }, (_, i) => (
                         <span key={i} className="text-yellow-500 text-lg">★</span>
@@ -166,26 +192,41 @@ const Productdetails = () => {
             Customer Reviews
           </h2>
           {reviews.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-5">
-              {reviews.slice(0, 4).map((rev, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-100 rounded-2xl p-5 shadow-sm bg-white hover:shadow-md transition-all duration-200"
-                >
-                  <p className="text-yellow-500 font-semibold">⭐ {rev.rating}/5</p>
-                  <p className="text-gray-800 mt-2">{rev.feedback}</p>
-                  <p className="text-gray-500 text-sm mt-2 italic">- {rev.user}</p>
-                  <p className="text-gray-400 text-xs mt-1">
-                    {new Date(rev.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center">
-              No reviews yet. Be the first to review this product!
+  <div className="grid sm:grid-cols-2 gap-5">
+    {filterReviews.length > 0
+      ? filterReviews.map((rev, index) => (
+          <div
+            key={index}
+            className="border border-gray-100 rounded-2xl p-5 shadow-sm bg-white hover:shadow-md transition-all duration-200"
+          >
+            <p className="text-yellow-500 font-semibold">⭐ {rev.rating}/5</p>
+            <p className="text-gray-800 mt-2">{rev.feedback}</p>
+            <p className="text-gray-500 text-sm mt-2 italic">- {rev.user}</p>
+            <p className="text-gray-400 text-xs mt-1">
+              {new Date(rev.createdAt).toLocaleString()}
             </p>
-          )}
+          </div>
+        ))
+      : reviews.map((rev, index) => (
+          <div
+            key={index}
+            className="border border-gray-100 rounded-2xl p-5 shadow-sm bg-white hover:shadow-md transition-all duration-200"
+          >
+            <p className="text-yellow-500 font-semibold">⭐ {rev.rating}/5</p>
+            <p className="text-gray-800 mt-2">{rev.feedback}</p>
+            <p className="text-gray-500 text-sm mt-2 italic">- {rev.user}</p>
+            <p className="text-gray-400 text-xs mt-1">
+              {new Date(rev.createdAt).toLocaleString()}
+            </p>
+          </div>
+        ))}
+  </div>
+) : (
+  <p className="text-gray-500 text-center">
+    No reviews yet. Be the first to review this product!
+  </p>
+)}
+
         </div>
 
         {/* Add Review */}

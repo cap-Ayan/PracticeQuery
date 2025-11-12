@@ -32,3 +32,20 @@ exports.getReviewsByProduct = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+exports.getFilterratingByProduct = async (req, res) => {
+  const { productId } = req.params;
+  const {rating}=req.body;
+  
+  try {
+    const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
+    const filteredReviews = reviews.filter(review => review.rating == rating);
+    res.status(200).json({ success: true, reviews: filteredReviews });
+
+    
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+
+
+}
