@@ -4,6 +4,7 @@ const app = express();
 const connectDb = require('./config/connectDb.js');
 dotenv.config();
 const productRoutes = require('./route/productRoutes.js');
+const reiewRoutes = require('./route/reviewRoutes.js');
 const cors = require('cors');
 const PORT = process.env.PORT || 5000;
 
@@ -27,6 +28,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/products', productRoutes);
 const server = http.createServer(app);
+
+app.use('/api/reviews', reiewRoutes);
+
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

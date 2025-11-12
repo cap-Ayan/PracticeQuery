@@ -1,7 +1,5 @@
 import React from 'react'
 import { Routes, Route, NavLink } from 'react-router-dom'
-import Page1 from './pages/Page1'
-import Page2 from './pages/Page2'
 import Home from './pages/Home'
 import Productdetails from './pages/Productdetails'
 import Admin from './pages/admin'
@@ -44,7 +42,7 @@ const App = () => {
       <main className="   bg-white w-screen min-h-screen overflow-x-hidden">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/page2" element={<Page2 />} />
+        
           <Route path="/productdetails/:id" element={<Productdetails />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/editProducts/:id" element={<EditProduct/>} />
