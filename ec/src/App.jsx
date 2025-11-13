@@ -4,6 +4,10 @@ import Home from './pages/Home'
 import Productdetails from './pages/Productdetails'
 import Admin from './pages/admin'
 import EditProduct from './pages/EditProduct'
+import SignIn from './pages/SignIn'
+import SignUp from './pages/SignUp'
+import Profile from './pages/Profile'
+import Cart from './pages/Cart'
 
 const App = () => {
   const linkClasses = "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300";
@@ -46,6 +50,10 @@ const App = () => {
           <Route path="/productdetails/:id" element={<Productdetails />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/editProducts/:id" element={<EditProduct/>} />
+          <Route path='/signin' element={<SignIn />} />
+          <Route path='/signup' element={<SignUp />} />
+          <Route path='/profile' element={<Profile />} />
+          <Route path='/cart' element={<Cart />} />
         </Routes>
       </main>
     // </div>
