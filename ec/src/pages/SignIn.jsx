@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // Step 1: password login → Step 2: OTP verify
+  // const [step, setStep] = useState(1); // Step 1: password login → Step 2: OTP verify
   const [formData, setFormData] = useState({ email: "", password: "", otp: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,9 +28,9 @@ const SignIn = () => {
         { withCredentials: true }
       );
 
-      if (res.data.success && res.data.message === "OTP sent to your email") {
-        toast.success("OTP sent to your email. Please check your inbox.");
-        setStep(2);
+      if (res.data.success ) {
+        toast.success("Logged In");
+        navigate('/');
       } else {
         setError(res.data.message || "Login failed");
       }
@@ -75,11 +75,11 @@ const SignIn = () => {
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-200">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6 text-blue-600">
-          {step === 1 ? "Sign In" : "Verify OTP"}
+          Sign In
         </h2>
 
         {/* Step 1 — Email + Password */}
-        {step === 1 && (
+        
           <form onSubmit={handleLogin} className="space-y-4 text-black/70">
             <div>
               <label className="block text-gray-700 font-medium mb-1">Email</label>
@@ -115,10 +115,10 @@ const SignIn = () => {
               {loading ? "Sending OTP..." : "Login & Send OTP"}
             </button>
           </form>
-        )}
+        
 
         {/* Step 2 — OTP Entry */}
-        {step === 2 && (
+        {/* {step === 2 && (
           <form onSubmit={handleVerifyOTP} className="space-y-4 text-black/70">
             <div>
               <label className="block text-gray-700 font-medium mb-1">Enter OTP</label>
@@ -142,7 +142,7 @@ const SignIn = () => {
               {loading ? "Verifying..." : "Verify OTP"}
             </button>
           </form>
-        )}
+        )} */}
 
         {/* Signup link */}
         <p className="text-sm text-gray-700 text-center mt-4">

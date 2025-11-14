@@ -118,37 +118,37 @@ exports.loginUser = async (req, res) => {
         return res.status(401).json({ success: false, message: "Invalid password" });
       }
 
-      // Generate 6-digit OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log("OTP generated:", otpCode);
+    //   // Generate 6-digit OTP
+    //   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    //   console.log("OTP generated:", otpCode);
 
 
-      // Save OTP to DB (expire in 5 minutes)
-      await Otp.create({ email, otp: otpCode });
+    //   // Save OTP to DB (expire in 5 minutes)
+    //   await Otp.create({ email, otp: otpCode });
 
-      console.log("OTP sent to email:", otpCode);
+    //   console.log("OTP sent to email:", otpCode);
 
 
-      // Send OTP via email
-      await transporter.sendMail({
-        from: `"ShopEase" <${process.env.SENDER_EMAIL}>`,
-        to: email,
-        subject: "Your Login OTP",
-        text: `Your OTP code is ${otpCode}. It will expire in 5 minutes.`,
-      });
+    //   // Send OTP via email
+    //   await transporter.sendMail({
+    //     from: `"ShopEase" <${process.env.SENDER_EMAIL}>`,
+    //     to: email,
+    //     subject: "Your Login OTP",
+    //     text: `Your OTP code is ${otpCode}. It will expire in 5 minutes.`,
+    //   });
 
-      return res.json({ success: true, message: "OTP sent to your email" });
-    }
+    //   return res.json({ success: true, message: "OTP sent to your email" });
+    // }
 
     
-    if (otp) {
-      const validOtp = await Otp.findOne({ email, otp });
-      if (!validOtp) {
-        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
-      }
+    // if (otp) {
+    //   const validOtp = await Otp.findOne({ email, otp });
+    //   if (!validOtp) {
+    //     return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    //   }
 
-      // OTP is valid → delete it and generate token
-      await Otp.deleteMany({ email });
+    //   // OTP is valid → delete it and generate token
+    //   await Otp.deleteMany({ email });
 
       const token = await generateToken({ userId: user._id });
 
@@ -193,6 +193,60 @@ exports.logoutUser = async (req, res) => {
     res.clearCookie('token');
     res.json({ success: true, message: 'User logged out successfully' });
     
+
+}
+
+exports.verifyOtp = async (req, res) => {
+
+  const { email, otp } = req.body;
+
+
+   const validOtp = await Otp.findOne({ email, otp });
+      if (!validOtp) {
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      }
+
+       await userModel.findOneAndUpdate({email},{isVerified:true})
+
+
+
+      // OTP is valid → delete it and generate token
+      await Otp.deleteMany({ email });
+
+      res.json({
+        success: true,
+        message: "User verified successfully",
+      })
+
+}
+
+exports.sendOtp = async (req, res) => {
+
+  const { email } = req.body;
+
+  
+
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("OTP generated:", otpCode);
+
+
+      // Save OTP to DB (expire in 5 minutes)
+      await Otp.create({ email, otp: otpCode });
+
+      console.log("OTP sent to email:", otpCode);
+
+
+      // Send OTP via email
+      await transporter.sendMail({
+        from: `"ShopEase" <${process.env.SENDER_EMAIL}>`,
+        to: email,
+        subject: "Your Login OTP",
+        text: `Your OTP code is ${otpCode}. It will expire in 5 minutes.`,
+      });
+
+      return res.json({ success: true, message: "OTP sent to your email" });
+    
+
 
 }
 

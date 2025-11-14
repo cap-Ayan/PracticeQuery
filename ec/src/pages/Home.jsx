@@ -3,6 +3,7 @@ import { useShopContext } from "../context/Context";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import VerificationBox from "../components/VerificationBox";
 
 
 const Navbar = ({ user, setUser }) => {
@@ -63,7 +64,7 @@ const Navbar = ({ user, setUser }) => {
               {showMenu && (
                 <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg border py-2">
                   <p className="px-4 py-2 text-gray-800 font-medium border-b">
-                    {user.name}
+                    {user.userName}
                   </p>
                   <button
                     onClick={() => navigate("/profile")}
@@ -95,6 +96,7 @@ const Navbar = ({ user, setUser }) => {
   );
 };
 const Home = () => {
+  const [showVerificationBox, setShowVerificationBox] = useState(false);
   const allProducts = useShopContext();
   const [products, setProducts] = useState(allProducts);
   const [page, setPage] = useState(1);
@@ -115,7 +117,9 @@ const Home = () => {
           withCredentials: true, // use cookies to send token
         });
         if (res.data.success) {
+          console.log(res.data.user)
           setUser(res.data.user);
+          console.log(user)
         }
       } catch (err) {
         console.log("User not logged in");
@@ -193,6 +197,9 @@ const Home = () => {
     <div>
       {/* Navbar */}
       <Navbar user={user} setUser={setUser} />
+      {showVerificationBox && (
+           <VerificationBox email={user.email} setShowVerificationBox={setShowVerificationBox}/>
+        )}
 
       {/* Main content */}
       <div className="p-4">
@@ -247,9 +254,30 @@ const Home = () => {
                     </button>
                     <button
                       className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
+                        if(!user){
+                          toast.error("Please login to edit products")
+                          navigate("/signin")
+                          return
+                        }else{
+                        if(user.isVerified==false){
+                          try {
+                            const res = await axios.post("http://localhost:5000/api/users/send",{email:user.email})
+                            if(res.data.success){
+                              setShowVerificationBox(true)
+                            }
+                            else{
+                              toast.error(res.data.message)
+                            }
+                          } catch (error) {
+                            toast.error(error.response.data.message)
+                          }
+                          
+                        }else{
                         navigate(`/editProducts/${item._id}`);
+                        }
+                      }
                       }}
                     >
                       Edit
