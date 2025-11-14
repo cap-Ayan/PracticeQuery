@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useShopContext } from "../context/Context";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 
 const Navbar = ({ user, setUser }) => {
@@ -16,7 +17,7 @@ const Navbar = ({ user, setUser }) => {
         { withCredentials: true }
       );
       setUser(null);
-      alert("Logged out successfully");
+      toast.success("Logout successful");
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);

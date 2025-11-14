@@ -4,103 +4,144 @@ import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [step, setStep] = useState(1); // 1 = user details, 2 = OTP
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
     password: "",
+    otp: ""
   });
-  const [error, setError] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  // STEP 1 → SEND OTP
+  const sendOtp = async () => {
     setLoading(true);
+    setMsg("");
 
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         "http://localhost:5000/api/users/register",
-        formData,
+        {
+          userName: formData.userName,
+          email: formData.email,
+          password: formData.password,
+        },
         { withCredentials: true }
       );
 
-      if (response.data.success) {
-        alert("Signup successful! Redirecting to Sign In...");
-        navigate("/");
-      }
+      setMsg(res.data.message);
+      setStep(2); // go to OTP page
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Signup failed!");
-    } finally {
-      setLoading(false);
+      setMsg(err.response?.data?.message || "Error sending OTP");
     }
+
+    setLoading(false);
+  };
+
+  // STEP 2 → VERIFY OTP + CREATE USER
+  const verifyOtp = async () => {
+    setLoading(true);
+    setMsg("");
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/users/register",
+        {
+          ...formData,
+        },
+        { withCredentials: true }
+      );
+
+      setMsg("Registration successful!");
+      setStep(1); // go back to user details page
+      navigate("/"); // redirect to home page)
+      console.log("User:", res.data.user);
+    } catch (err) {
+      setMsg(err.response?.data?.message || "OTP verification failed");
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Create an Account
-        </h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6 text-black/70">
+        <h2 className="text-2xl font-semibold mb-4 text-center">Signup</h2>
 
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {msg && <p className="text-center text-blue-600 mb-2">{msg}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-black/70">
-          <input
-            type="text"
-            name="userName"
-            placeholder="Full Name"
-            required
-            value={formData.userName}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200"
-          />
+        {step === 1 && (
+          <>
+            <input
+              type="text"
+              placeholder="Full Name"
+              name="userName"
+              value={formData.userName}
+              onChange={handleChange}
+              className="w-full p-2 border rounded mb-3"
+            />
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            required
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200"
-          />
+            <input
+              type="email"
+              placeholder="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-2 border rounded mb-3"
+            />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200"
-          />
+            <input
+              type="password"
+              placeholder="Password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full p-2 border rounded mb-3"
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition"
-          >
-            {loading ? "Signing up..." : "Sign Up"}
-          </button>
-        </form>
+            <button
+              onClick={sendOtp}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            >
+              {loading ? "Sending OTP..." : "Send OTP"}
+            </button>
+          </>
+        )}
 
-        <p className="text-center text-sm text-gray-600 mt-4">
-          Already have an account?{" "}
-          <button
-            onClick={() => navigate("/signin")}
-            className="text-indigo-600 hover:underline font-medium"
-          >
-            Sign In
-          </button>
-        </p>
+        {step === 2 && (
+          <>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              name="otp"
+              value={formData.otp}
+              onChange={handleChange}
+              className="w-full p-2 border rounded mb-3"
+            />
+
+            <button
+              onClick={verifyOtp}
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            >
+              {loading ? "Verifying..." : "Verify & Register"}
+            </button>
+
+            <button
+              onClick={() => setStep(1)}
+              className="w-full border mt-3 py-2 rounded"
+            >
+              Edit Info
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

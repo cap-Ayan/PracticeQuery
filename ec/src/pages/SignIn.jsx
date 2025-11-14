@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const SignIn = () => {
       );
 
       if (res.data.success && res.data.message === "OTP sent to your email") {
-        alert("OTP sent to your email. Please check your inbox.");
+        toast.success("OTP sent to your email. Please check your inbox.");
         setStep(2);
       } else {
         setError(res.data.message || "Login failed");
@@ -36,6 +37,8 @@ const SignIn = () => {
     } catch (err) {
       console.error(err);
       setError("Error during login. Please try again.");
+      toast.error("Error during login. Please try again.");
+
     } finally {
       setLoading(false);
     }
@@ -55,7 +58,8 @@ const SignIn = () => {
       );
 
       if (res.data.success) {
-        alert("Login successful!");
+        toast.success("Login successful");
+        setStep(1)
         navigate("/");
       } else {
         setError(res.data.message || "Invalid OTP");

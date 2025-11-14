@@ -16,45 +16,87 @@ const transporter = nodemailer.createTransport({
 
 
 exports.registerUser = async (req, res) => {
+    const { userName, email, password, otp } = req.body;
 
-    const{userName,email,password}=req.body;
+  try {
 
-    try {
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: 'User already exists' });
-        }
+    // STEP 1: OTP generation step (user sends username, email, password)
+    if (email && password && !otp) {
 
-        console.log(req.body);
+      const existingUser = await userModel.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: "User already exists" });
+      }
+
+      // Generate OTP
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("Registration OTP:", otpCode);
+
+      // Save OTP
+      await Otp.create({ email, otp: otpCode });
+
+      // Send OTP
+      await transporter.sendMail({
+        from: `"ShopEase" <${process.env.SENDER_EMAIL}>`,
+        to: email,
+        subject: "Verify Your Email - OTP",
+        text: `Your OTP code is ${otpCode}. It expires in 5 minutes.`,
+      });
+
+      return res.json({
+        success: true,
+        message: "OTP sent to email. Please verify to complete registration.",
+      });
+    }
 
 
-        const newUser = new userModel({
-            userName,
-            email,
-            password: await generateHashedPassword(password)
-        });
+    // STEP 2: OTP verification (user only sends email + otp)
+    if (otp) {
 
-        await newUser.save();
+      const validOtp = await Otp.findOne({ email, otp });
+      if (!validOtp) {
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      }
 
-        const token = await generateToken({ userId: newUser._id });
+      // Delete OTP after use
+      await Otp.deleteMany({ email });
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-        })
-      
+      // Create user AFTER OTP verification
+      const newUser = new userModel({
+        userName,
+        email,
+        password: await generateHashedPassword(password),
+      });
 
+      await newUser.save();
 
-        res.status(201).json({ success: true, message: 'User registered successfully' });
+      const token = await generateToken({ userId: newUser._id });
 
-}
-catch (error) {
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+      });
 
-    res.status(500).json({ success: false, message: 'Error registering user', error });
-}
+      return res.status(201).json({
+        success: true,
+        message: "User registered successfully",
+        token,
+        user: {
+          id: newUser._id,
+          name: newUser.userName,
+          email: newUser.email,
+        },
+      });
+    }
 
-}
+    res.status(400).json({ success: false, message: "Missing registration data or OTP" });
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ success: false, message: "Error registering user", error });
+  }
+};
 
 exports.loginUser = async (req, res) => {
   console.log("Login request received:", req.body);
