@@ -38,9 +38,9 @@ exports.getFilterratingByProduct = async (req, res) => {
   const {rating}=req.body;
   
   try {
-    const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
-    const filteredReviews = reviews.filter(review => review.rating == rating);
-    res.status(200).json({ success: true, reviews: filteredReviews });
+    const reviews = await Review.find({ productId ,rating}).sort({ createdAt: -1 });
+    
+    res.status(200).json({ success: true, reviews: reviews });
 
     
   } catch (error) {
