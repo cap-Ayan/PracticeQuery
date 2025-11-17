@@ -9,6 +9,7 @@ import VerificationBox from "../components/VerificationBox";
 const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -26,72 +27,153 @@ const Navbar = ({ user, setUser }) => {
   };
 
   return (
-    <nav className="flex justify-between items-center bg-white shadow-md px-6 py-3 sticky top-0 z-10">
-      <h1
-        className="text-xl font-bold text-blue-600 cursor-pointer"
-        onClick={() => navigate("/")}
-      >
-        🛒 ShopEase
-      </h1>
-
-      <div className="flex items-center space-x-4 relative">
-        <button
-          onClick={() => navigate("/")}
-          className="text-gray-700 hover:text-blue-600 font-medium"
+    <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 sticky top-0 z-50 animate-fade-in">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <h1
+          className="text-2xl font-semibold text-slate-900 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => {
+            navigate("/");
+            setNavOpen(false);
+          }}
         >
-          Home
-        </button>
+          🛒 ShopEase
+        </h1>
 
         <button
-          onClick={() => navigate("/cart")}
-          className="text-gray-700 hover:text-blue-600 font-medium"
+          className="md:hidden p-2 rounded-lg border border-slate-200 text-slate-900 hover:bg-slate-100 transition"
+          onClick={() => setNavOpen(!navOpen)}
+          aria-label="Toggle navigation menu"
         >
-          Cart
+          <span className="block w-5 h-0.5 bg-slate-900 mb-1"></span>
+          <span className="block w-5 h-0.5 bg-slate-900 mb-1"></span>
+          <span className="block w-5 h-0.5 bg-slate-900"></span>
         </button>
 
-        {/* Profile Section */}
-        <div className="relative">
-          {user ? (
-            <>
-              <div
-                onClick={() => setShowMenu(!showMenu)}
-                className="bg-blue-500 text-white font-semibold w-10 h-10 flex items-center justify-center rounded-full cursor-pointer select-none"
-              >
-                {user.userName?.charAt(0).toUpperCase()}
-              </div>
+        <div className="hidden md:flex items-center space-x-6 relative">
+          <button
+            onClick={() => navigate("/")}
+            className="text-slate-700 hover:text-slate-900 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all duration-200"
+          >
+            Home
+          </button>
 
-              {/* Dropdown Menu */}
-              {showMenu && (
-                <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg border py-2">
-                  <p className="px-4 py-2 text-gray-800 font-medium border-b">
-                    {user.userName}
-                  </p>
-                  <button
-                    onClick={() => navigate("/profile")}
-                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
+          <button
+            onClick={() => navigate("/cart")}
+            className="text-slate-700 hover:text-slate-900 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all duration-200"
+          >
+            Cart
+          </button>
+
+          {/* Profile Section */}
+          <div className="relative">
+            {user ? (
+              <>
+                <div
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="bg-slate-900 text-white font-semibold w-11 h-11 flex items-center justify-center rounded-full cursor-pointer select-none shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+                >
+                  {user.userName?.charAt(0).toUpperCase()}
                 </div>
-              )}
-            </>
-          ) : (
-            <div
-              onClick={() => navigate("/signin")}
-              className="bg-gray-200 hover:bg-gray-300 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer"
-              title="Sign In"
-            >
-              <span className="text-xl">👤</span>
-            </div>
-          )}
+
+                {/* Dropdown Menu */}
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl rounded-xl border border-slate-200 py-2 animate-scale-in overflow-hidden">
+                    <p className="px-4 py-2.5 text-slate-900 font-semibold border-b border-slate-100 bg-slate-50">
+                      {user.userName}
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigate("/profile");
+                        setShowMenu(false);
+                      }}
+                      className="block w-full text-left px-4 py-2.5 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors duration-150"
+                    >
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setShowMenu(false);
+                      }}
+                      className="block w-full text-left px-4 py-2.5 text-slate-900 hover:bg-slate-100 transition-colors duration-150"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div
+                onClick={() => navigate("/signin")}
+                className="bg-slate-100 hover:bg-slate-200 w-11 h-11 flex items-center justify-center rounded-full cursor-pointer shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200"
+                title="Sign In"
+              >
+                <span className="text-xl">👤</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {navOpen && (
+        <div className="md:hidden mt-4 space-y-3 px-2">
+          <button
+            onClick={() => {
+              navigate("/");
+              setNavOpen(false);
+            }}
+            className="w-full text-left text-slate-900 font-medium px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => {
+              navigate("/cart");
+              setNavOpen(false);
+            }}
+            className="w-full text-left text-slate-900 font-medium px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
+          >
+            Cart
+          </button>
+          <div className="border-t border-slate-200 pt-3">
+            {user ? (
+              <div className="space-y-2">
+                <p className="text-slate-600 text-sm">Signed in as</p>
+                <p className="text-slate-900 font-semibold">{user.userName}</p>
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setNavOpen(false);
+                  }}
+                  className="w-full text-left text-slate-900 font-medium px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setNavOpen(false);
+                  }}
+                  className="w-full text-left text-slate-900 font-medium px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  navigate("/signin");
+                  setNavOpen(false);
+                }}
+                className="w-full text-left text-slate-900 font-medium px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
+              >
+                Sign In
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
@@ -202,58 +284,68 @@ const Home = () => {
         )}
 
       {/* Main content */}
-      <div className="p-4">
-        <h2 className="text-xl font-bold mb-4">Products</h2>
+      <div className="p-6 sm:p-8 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold mb-8 text-slate-900 animate-slide-in">Products</h2>
 
         {/* Product grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {currentItems.map((item) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {currentItems.map((item, index) => {
             const review = reviewStats[item._id] || { avg: 0, count: 0 };
             const stars = Math.round(review.avg);
 
             return (
               <div
                 key={item._id}
-                className="bg-white rounded-lg shadow-md p-3 cursor-pointer hover:shadow-lg transition"
+                className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group animate-fade-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => navigate(`/productdetails/${item._id}`)}
               >
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-40 object-contain mb-4"
-                />
-                <h2 className="text-base font-semibold mb-1 truncate">
+                <div className="relative overflow-hidden rounded-xl mb-4 bg-slate-50 aspect-square flex items-center justify-center">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <h2 className="text-base font-semibold mb-1.5 truncate text-slate-900 group-hover:text-slate-900 transition-colors">
                   {item.title}
                 </h2>
-                <p className="text-sm text-gray-600 mb-2 truncate">
+                <p className="text-sm text-slate-500 mb-3 truncate line-clamp-2">
                   {item.description}
                 </p>
 
                 {/* Rating */}
-                <div className="flex items-center mb-2">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span
-                      key={i}
-                      className={`text-lg ${
-                        i < stars ? "text-yellow-500" : "text-gray-300"
-                      }`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                  <span className="ml-1 text-sm text-gray-600">
+                <div className="flex items-center mb-3">
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`text-sm ${
+                          i < stars ? "text-slate-800" : "text-slate-300"
+                        } transition-colors`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="ml-2 text-xs text-slate-500">
                     ({review.count})
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-blue-600 font-bold">${item.price}</span>
-                  <div className="flex space-x-1">
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xl font-bold text-slate-900">${item.price}</span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button 
+                      className="flex-1 bg-slate-900 hover:bg-black text-white px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       Add to Cart
                     </button>
                     <button
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                      className="bg-white border border-slate-300 text-slate-900 px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
                       onClick={async (e) => {
                         e.stopPropagation();
                         if(!user){
@@ -283,7 +375,7 @@ const Home = () => {
                       Edit
                     </button>
                     <button
-                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                      className="bg-slate-100 text-slate-900 px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 border border-slate-200"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteItem(item._id);
@@ -299,11 +391,11 @@ const Home = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-center mt-6 space-x-2">
+        <div className="flex justify-center items-center mt-10 space-x-2">
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
-            className="px-3 py-1 border rounded disabled:opacity-50 bg-gray-400"
+            className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed bg-white hover:bg-slate-50 text-slate-700 font-medium shadow-sm hover:shadow transition-all duration-200 disabled:hover:bg-white"
           >
             Prev
           </button>
@@ -312,8 +404,10 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setPage(index + 1)}
-              className={`px-3 py-1 border rounded ${
-                page === index + 1 ? "bg-blue-500 text-white" : "bg-gray-300"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                page === index + 1
+                  ? "bg-slate-900 text-white shadow-md scale-105"
+                  : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm hover:shadow"
               }`}
             >
               {index + 1}
@@ -323,7 +417,7 @@ const Home = () => {
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
-            className="px-3 py-1 border rounded disabled:opacity-50 bg-gray-400"
+            className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed bg-white hover:bg-slate-50 text-slate-700 font-medium shadow-sm hover:shadow transition-all duration-200 disabled:hover:bg-white"
           >
             Next
           </button>

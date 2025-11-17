@@ -24,33 +24,46 @@ const VerificationBox = ({email,setShowVerificationBox}) => {
     setLoading(false);
   }
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-        <h2 className="text-xl font-semibold mb-4">Verify Your Account</h2>
-        <p className="text-gray-600 mb-4">An OTP has been sent to {email}. Please enter it below to verify your account.</p>
-        <form onSubmit={handleSubmit} className='text-black/70'>
-          <input
-            type="text"
-            className="w-full p-2 border border-gray-300 rounded mb-4"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e)=>setOtp(e.target.value)}
-            required
-          />
-          <div className="flex justify-end space-x-2">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 animate-scale-in">
+        <h2 className="text-2xl font-bold mb-2 text-slate-900">
+          Verify Your Account
+        </h2>
+        <p className="text-slate-600 mb-6 text-sm">An OTP has been sent to <span className="font-semibold text-slate-900">{email}</span>. Please enter it below to verify your account.</p>
+        <form onSubmit={handleSubmit} className='space-y-5'>
+          <div>
+            <label className="block text-slate-700 font-medium mb-2 text-sm">Enter OTP</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400 text-center text-2xl tracking-widest font-semibold"
+              placeholder="000000"
+              value={otp}
+              onChange={(e)=>setOtp(e.target.value)}
+              required
+              maxLength={6}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 font-medium transition-all duration-200"
               onClick={()=>setShowVerificationBox(false)}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-black font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
               disabled={loading}
             >
-              {loading?"Verifying...":"Verify"}
+              {loading ? (
+                <span className="flex items-center">
+                  <span className="animate-pulse mr-2">⏳</span>
+                  Verifying...
+                </span>
+              ) : (
+                "Verify"
+              )}
             </button>
           </div>
         </form>

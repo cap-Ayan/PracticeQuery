@@ -43,7 +43,7 @@ const App = () => {
     //     </div>
     //   </nav>
 
-      <main className="   bg-white w-screen min-h-screen overflow-x-hidden">
+      <main className="bg-[#f4f4f5] w-full min-h-screen overflow-x-hidden">
         <Routes>
           <Route path="/" element={<Home />} />
         

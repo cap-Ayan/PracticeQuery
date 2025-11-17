@@ -69,7 +69,7 @@ const EditProduct = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4 w-screen ">
+    <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4 w-full">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-2xl space-y-6 text-black/60"

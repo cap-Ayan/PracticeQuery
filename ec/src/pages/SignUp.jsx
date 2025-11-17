@@ -70,78 +70,129 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6 text-black/70">
-        <h2 className="text-2xl font-semibold mb-4 text-center">Signup</h2>
+    <div className="flex items-center justify-center min-h-screen bg-[#f4f4f5] p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 sm:p-10 border border-slate-200 animate-scale-in">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-2 text-slate-900">
+            Create Account
+          </h2>
+          <p className="text-slate-500 text-sm">Join us and start shopping</p>
+        </div>
 
-        {msg && <p className="text-center text-blue-600 mb-2">{msg}</p>}
+        {msg && (
+          <div className={`mb-4 px-4 py-3 rounded-xl text-sm text-center animate-fade-in ${
+            msg.includes("successful") || msg.includes("sent")
+              ? "bg-slate-100 border border-slate-200 text-slate-900"
+              : "bg-slate-100 border border-slate-200 text-slate-900"
+          }`}>
+            {msg}
+          </div>
+        )}
 
         {step === 1 && (
-          <>
-            <input
-              type="text"
-              placeholder="Full Name"
-              name="userName"
-              value={formData.userName}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
+          <div className="space-y-5 animate-fade-in">
+            <div>
+              <label className="block text-slate-700 font-medium mb-2 text-sm">Full Name</label>
+              <input
+                type="text"
+                placeholder="Enter your full name"
+                name="userName"
+                value={formData.userName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
+              />
+            </div>
 
-            <input
-              type="email"
-              placeholder="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
+            <div>
+              <label className="block text-slate-700 font-medium mb-2 text-sm">Email</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
+              />
+            </div>
 
-            <input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
+            <div>
+              <label className="block text-slate-700 font-medium mb-2 text-sm">Password</label>
+              <input
+                type="password"
+                placeholder="Create a password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400"
+              />
+            </div>
 
             <button
               onClick={sendOtp}
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              className="w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-black transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              {loading ? "Sending OTP..." : "Send OTP"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <span className="animate-pulse mr-2">⏳</span>
+                  Sending OTP...
+                </span>
+              ) : (
+                "Send OTP"
+              )}
             </button>
-          </>
+          </div>
         )}
 
         {step === 2 && (
-          <>
-            <input
-              type="text"
-              placeholder="Enter OTP"
-              name="otp"
-              value={formData.otp}
-              onChange={handleChange}
-              className="w-full p-2 border rounded mb-3"
-            />
+          <div className="space-y-5 animate-fade-in">
+            <div>
+              <label className="block text-slate-700 font-medium mb-2 text-sm">Enter OTP</label>
+              <input
+                type="text"
+                placeholder="Enter the OTP sent to your email"
+                name="otp"
+                value={formData.otp}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200 bg-white hover:border-slate-400 text-center text-2xl tracking-widest"
+              />
+            </div>
 
             <button
               onClick={verifyOtp}
               disabled={loading}
-              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+              className="w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-black transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              {loading ? "Verifying..." : "Verify & Register"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <span className="animate-pulse mr-2">⏳</span>
+                  Verifying...
+                </span>
+              ) : (
+                "Verify & Register"
+              )}
             </button>
 
             <button
               onClick={() => setStep(1)}
-              className="w-full border mt-3 py-2 rounded"
+              className="w-full border-2 border-slate-300 text-slate-700 font-medium py-3 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
             >
               Edit Info
             </button>
-          </>
+          </div>
         )}
+
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <p className="text-sm text-slate-600 text-center">
+            Already have an account?{" "}
+            <button
+              onClick={() => navigate("/signin")}
+              className="text-slate-900 hover:underline font-semibold transition-colors"
+            >
+              Sign in here
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
