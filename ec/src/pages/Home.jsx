@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import VerificationBox from "../components/VerificationBox";
+import UnverifiedPopup from "../components/UnverifiedPopup";
 
 
 const Navbar = ({ user, setUser }) => {
@@ -187,6 +188,8 @@ const Home = () => {
   const [reviewStats, setReviewStats] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
+   const [showUnverifiedPopup, setShowUnverifiedPopup] = useState(false);
+
 
   // Sync context → local products
   useEffect(() => setProducts(allProducts), [allProducts]);
@@ -209,6 +212,15 @@ const Home = () => {
     };
     fetchUser();
   }, []);
+  useEffect(() => {
+  if (user && user.email) {
+    if (user.isVerified === false) {
+      setShowUnverifiedPopup(true);
+    } else {
+      setShowUnverifiedPopup(false);
+    }
+  }
+}, [user]);
 
   const deleteItem = async (id) => {
     try {
@@ -282,6 +294,10 @@ const Home = () => {
       {showVerificationBox && (
            <VerificationBox email={user.email} setShowVerificationBox={setShowVerificationBox}/>
         )}
+
+         {showUnverifiedPopup && (
+        <UnverifiedPopup setShowUnverifiedPopup={setShowUnverifiedPopup} user={user} />
+      )}
 
       {/* Main content */}
       <div className="p-6 sm:p-8 max-w-7xl mx-auto">

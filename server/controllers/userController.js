@@ -16,41 +16,50 @@ const transporter = nodemailer.createTransport({
 
 
 exports.registerUser = async (req, res) => {
-    const { userName, email, password, otp } = req.body;
+  const { userName, email, password, otp } = req.body;
 
   try {
+    // Check if user already exists
+    let existingUser = await userModel.findOne({ email });
 
-    // STEP 1: OTP generation step (user sends username, email, password)
-    if (email && password && !otp) {
+    
+    if (!otp) {
 
-      const existingUser = await userModel.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ success: false, message: "User already exists" });
       }
 
-      // Generate OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log("Registration OTP:", otpCode);
+      // Create user with isVerified = false
+      const newUser = await userModel.create({
+        userName,
+        email,
+        password: await generateHashedPassword(password),
+        isVerified: false
+      });
 
-      // Save OTP
+      // Create OTP
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       await Otp.create({ email, otp: otpCode });
 
-      // Send OTP
+      // Send email
       await transporter.sendMail({
         from: `"ShopEase" <${process.env.SENDER_EMAIL}>`,
         to: email,
         subject: "Verify Your Email - OTP",
-        text: `Your OTP code is ${otpCode}. It expires in 5 minutes.`,
+        html: `
+          <h2>Verify Your Account</h2>
+          <p>Your OTP is: <b>${otpCode}</b></p>
+          <p>It expires in 5 minutes.</p>
+        `
       });
 
       return res.json({
         success: true,
-        message: "OTP sent to email. Please verify to complete registration.",
+        message: "User created. OTP sent to email.",
       });
     }
 
-
-    // STEP 2: OTP verification (user only sends email + otp)
+    
     if (otp) {
 
       const validOtp = await Otp.findOne({ email, otp });
@@ -58,19 +67,19 @@ exports.registerUser = async (req, res) => {
         return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
       }
 
-      // Delete OTP after use
+      // Delete OTP after verification
       await Otp.deleteMany({ email });
 
-      // Create user AFTER OTP verification
-      const newUser = new userModel({
-        userName,
-        email,
-        password: await generateHashedPassword(password),
-      });
+      // Mark user as verified
+      await userModel.findOneAndUpdate(
+        { email },
+        { isVerified: true },
+      );
 
-      await newUser.save();
+      const user = await userModel.findOne({ email });
 
-      const token = await generateToken({ userId: newUser._id });
+      // Create token after verification
+      const token = await generateToken({ userId: user._id });
 
       res.cookie("token", token, {
         httpOnly: true,
@@ -78,23 +87,22 @@ exports.registerUser = async (req, res) => {
         sameSite: "none",
       });
 
-      return res.status(201).json({
+      return res.status(200).json({
         success: true,
-        message: "User registered successfully",
-        token,
+        message: "OTP verified. User activated.",
         user: {
-          id: newUser._id,
-          name: newUser.userName,
-          email: newUser.email,
-        },
+          id: user._id,
+          name: user.userName,
+          email: user.email,
+        }
       });
     }
 
-    res.status(400).json({ success: false, message: "Missing registration data or OTP" });
+    return res.status(400).json({ success: false, message: "Invalid request" });
 
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ success: false, message: "Error registering user", error });
+    res.status(500).json({ success: false, message: "Server error", error });
   }
 };
 
