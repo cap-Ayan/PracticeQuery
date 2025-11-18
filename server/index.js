@@ -9,6 +9,7 @@ dotenv.config();
 const productRoutes = require('./route/productRoutes.js');
 const reiewRoutes = require('./route/reviewRoutes.js');
 const userRoutes = require('./route/userRoutes.js');
+const cartRoutes = require('./route/cartRoutes.js');
 const cors = require('cors');
 const PORT = process.env.PORT || 5000;
 
@@ -40,7 +41,7 @@ app.use('/api/reviews', reiewRoutes);
 
 app.use('/api/users',userRoutes );
 
-// app.use("/api/auth", authRoutes);
+ app.use("/api/cart", cartRoutes);
 
 const server = http.createServer(app);
 

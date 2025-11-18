@@ -75,7 +75,7 @@ exports.deleteProduct = (req, res) => {
     exports.updateProduct = async (req, res) => {
   const { id } = req.params;
   const updateData = {};
-  const allowedFields = ['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime'];
+  const allowedFields = ['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime','quantity'];
   allowedFields.forEach(field => {
     if (req.body[field] !== undefined) {
       updateData[field] = req.body[field];

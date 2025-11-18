@@ -371,7 +371,33 @@ const Home = () => {
                   <div className="flex gap-1.5">
                     <button 
                       className="flex-1 bg-slate-900 hover:bg-black text-white px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
-                      onClick={(e) => e.stopPropagation()}
+                       onClick={async (e) => {
+                          e.stopPropagation();
+                          if (!user || !user._id) {
+                            toast.error("Please login to add items to cart.");
+                            navigate("/signin");
+                            return;
+                          }
+                          try {
+                            const res = await axios.post(
+                              "http://localhost:5000/api/cart/addToCart",
+                              {
+                                userId: user._id,
+                                productId: item._id,
+                                quantity: 1, // Default quantity
+                              },
+                              { withCredentials: true }
+                            );
+                            if (res.data.success) {
+                              toast.success("Item added to cart!");
+                            } else {
+                              toast.error(res.data.message || "Failed to add item to cart.");
+                            }
+                          } catch (error) {
+                            console.error("Error adding to cart:", error);
+                            toast.error("Server error while adding item to cart.");
+                          }
+                        }}
                     >
                       Add to Cart
                     </button>

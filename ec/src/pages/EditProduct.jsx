@@ -12,6 +12,7 @@ const EditProduct = () => {
     image: '',
     discountPercentage: '', // New field
     discountEndTime: '', // New field
+    quantity: '',
   });
 
   const [loading, setLoading] = useState(true);
@@ -45,8 +46,8 @@ const EditProduct = () => {
       try {
         const res = await fetch(`http://localhost:5000/api/products/getProductById/${id}`);
         const data = await res.json();
-        const { title, price, description, category, image, discountPercentage, discountEndTime } = data.product; // Destructure all fields
-        setProduct({ title, price, description, category, image, discountPercentage, discountEndTime });
+        const { title, price, description, category, image, discountPercentage, discountEndTime,quantity } = data.product; // Destructure all fields
+        setProduct({ title, price, description, category, image, discountPercentage, discountEndTime,quantity });
         setLoading(false);
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -101,7 +102,7 @@ const EditProduct = () => {
       >
         <h2 className="text-2xl font-bold text-gray-800">Edit Product</h2>
 
-        {['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime'].map((field) => (
+        {['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime', 'quantity'].map((field) => (
           <div key={field} className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
             {field === 'description' ? (
@@ -120,7 +121,7 @@ const EditProduct = () => {
               <input type="number" name={field} value={product[field]} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-4 py-2" />
             ) : ( 
               <input 
-                type={field === 'price' ? 'number' : 'text'}
+                type={field === 'price'|| field === 'quantity'? 'number' : 'text'}
                 name={field}
                 value={product[field]}
                 onChange={handleChange}

@@ -41,6 +41,11 @@ const productSchema = new Schema({
       type: Date,
       default: null,
     },
+    quantity: {
+      type: Number,
+      default: 2,
+    },
+    
 
 
 });
