@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Signup = () => {
+const AdminSignUp = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -35,6 +35,7 @@ const Signup = () => {
           userName: formData.userName,
           email: formData.email,
           password: formData.password,
+          isAdmin:true
         },
         { withCredentials: true }
       );
@@ -239,19 +240,10 @@ const Signup = () => {
               Sign in here
             </button>
           </p>
-          <p className="text-sm text-slate-600 text-center">
-            Want to become an admin?{" "}
-            <button
-              onClick={() => navigate("/adminsgn")}
-              className="text-slate-900 hover:underline font-semibold"
-            >
-              Sign in as admin
-            </button>
-          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Signup;
+export default AdminSignUp;

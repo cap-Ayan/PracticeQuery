@@ -8,6 +8,8 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
 import Cart from './pages/Cart'
+import AdminPanel from './pages/AdminPannel'
+import AdminSignUp from './pages/AdminSignUp'
 
 const App = () => {
   const linkClasses = "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300";
@@ -54,6 +56,9 @@ const App = () => {
           <Route path='/signup' element={<SignUp />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/cart' element={<Cart />} />
+          <Route path='/adminpnl' element={<AdminPanel />} />
+          <Route path="adminsgn" element={<AdminSignUp />} />
+          
         </Routes>
       </main>
     // </div>

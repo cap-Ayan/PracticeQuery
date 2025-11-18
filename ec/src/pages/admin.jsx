@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
   const [title, setTitle] = useState('');
@@ -9,6 +10,34 @@ const Admin = () => {
   const [image, setImage] = useState('');
   const [ratingRate, setRatingRate] = useState('');
   const [ratingCount, setRatingCount] = useState('');
+
+  const navigate  = useNavigate()
+
+     
+ useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/users/getUser", {
+          withCredentials: true, // use cookies to send token
+        });
+        if (res.data.success) {
+          console.log(res.data.user)
+          if(res.data.user.isAdmin==false){
+               navigate("/");
+              return
+          }
+          
+          
+          
+        }
+      } catch (err) {
+        console.log("User not logged in");
+      }
+    };
+    fetchUser();
+  }, []);
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -43,7 +43,7 @@ const VerificationBox = ({ email, setShowVerificationBox, setShowUnverifiedPopup
         toast.success("Account verified successfully");
         setShowVerificationBox(false);
         setShowUnverifiedPopup(false);
-        navigate("/");
+        window.location.reload();
       } else {
         toast.error(res.data.message);
         navigate("/");

@@ -65,6 +65,16 @@ const Navbar = ({ user, setUser }) => {
             Cart
           </button>
 
+          {user && user.isAdmin && (
+            <button
+              onClick={() => navigate("/adminpnl")}
+              className="text-slate-700 hover:text-slate-900 font-medium px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all duration-200"
+            >
+              Dashboard
+            </button>
+          )}
+
+
           {/* Profile Section */}
           <div className="relative">
             {user ? (
@@ -192,10 +202,13 @@ const Home = () => {
 
 
   // Sync context → local products
-  useEffect(() => setProducts(allProducts), [allProducts]);
+  useEffect(() => {setProducts(allProducts)
+    console.log(allProducts)
+  }, [allProducts]);
 
   // Fetch user details using token
   useEffect(() => {
+    
     const fetchUser = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/users/getUser", {
@@ -222,18 +235,7 @@ const Home = () => {
   }
 }, [user]);
 
-  const deleteItem = async (id) => {
-    try {
-      await axios.delete(
-        `http://localhost:5000/api/products/deleteProduct/${id}`
-      );
-      alert("Item deleted successfully");
-      setProducts((prev) => prev.filter((p) => p._id !== id));
-    } catch (error) {
-      alert("Error deleting item");
-      console.error(error);
-    }
-  };
+  
 
   // Handle pagination query params
   useEffect(() => {
@@ -351,7 +353,20 @@ const Home = () => {
 
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold text-slate-900">${item.price}</span>
+                    {item.discountPercentage
+ && item.discountPercentage> 0 && item.discountEndTime&& new Date(item.discountEndTime) > new Date() ? (
+                      <>
+                        <span className="text-xl font-bold text-red-600">
+                          ${(item.price - (item.price * item.discountPercentage) / 100).toFixed(2)}
+                        </span>
+                        <span className="text-sm text-slate-500 line-through ml-2">${item.price}</span>
+                        <span className="text-xs text-green-600 ml-2">
+                          {item.discountPercentage}% off
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xl font-bold text-slate-900">${item.price}</span>
+                    )}
                   </div>
                   <div className="flex gap-1.5">
                     <button 
@@ -360,45 +375,7 @@ const Home = () => {
                     >
                       Add to Cart
                     </button>
-                    <button
-                      className="bg-white border border-slate-300 text-slate-900 px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        if(!user){
-                          toast.error("Please login to edit products")
-                          navigate("/signin")
-                          return
-                        }else{
-                        if(user.isVerified==false){
-                          try {
-                            const res = await axios.post("http://localhost:5000/api/users/send",{email:user.email})
-                            if(res.data.success){
-                              setShowVerificationBox(true)
-                            }
-                            else{
-                              toast.error(res.data.message)
-                            }
-                          } catch (error) {
-                            toast.error(error.response.data.message)
-                          }
-                          
-                        }else{
-                        navigate(`/editProducts/${item._id}`);
-                        }
-                      }
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-slate-100 text-slate-900 px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 border border-slate-200"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteItem(item._id);
-                      }}
-                    >
-                      Remove
-                    </button>
+                  
                   </div>
                 </div>
               </div>

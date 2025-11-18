@@ -32,7 +32,15 @@ const productSchema = new Schema({
         type: Number,
         
       }
-    }
+    },
+    discountPercentage: {
+      type: Number,
+      default: 0,
+    },
+    discountEndTime: {
+      type: Date,
+      default: null,
+    },
 
 
 });

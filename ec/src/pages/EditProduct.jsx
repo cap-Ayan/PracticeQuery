@@ -9,19 +9,44 @@ const EditProduct = () => {
     price: '',
     description: '',
     category: '',
-    image: ''
+    image: '',
+    discountPercentage: '', // New field
+    discountEndTime: '', // New field
   });
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/users/getUser", {
+          withCredentials: true, // use cookies to send token
+        });
+        if (res.data.success) {
+          console.log(res.data.user)
+          if(res.data.user.isAdmin==false){
+               navigate("/");
+              return
+          }
+        
+          
+          
+        }
+      } catch (err) {
+        console.log("User not logged in");
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await fetch(`http://localhost:5000/api/products/getProductById/${id}`);
         const data = await res.json();
-        const { title, price, description, category, image } = data.product;
-        setProduct({ title, price, description, category, image });
+        const { title, price, description, category, image, discountPercentage, discountEndTime } = data.product; // Destructure all fields
+        setProduct({ title, price, description, category, image, discountPercentage, discountEndTime });
         setLoading(false);
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -76,7 +101,7 @@ const EditProduct = () => {
       >
         <h2 className="text-2xl font-bold text-gray-800">Edit Product</h2>
 
-        {['title', 'price', 'description', 'category', 'image'].map((field) => (
+        {['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime'].map((field) => (
           <div key={field} className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
             {field === 'description' ? (
@@ -89,8 +114,12 @@ const EditProduct = () => {
                 required
                 
               />
-            ) : (
-              <input
+            ) : field === 'discountEndTime' ? (
+              <input type="datetime-local" name={field} value={product[field]} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-4 py-2" />
+            ) : field === 'discountPercentage' ? (
+              <input type="number" name={field} value={product[field]} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-4 py-2" />
+            ) : ( 
+              <input 
                 type={field === 'price' ? 'number' : 'text'}
                 name={field}
                 value={product[field]}
@@ -98,6 +127,7 @@ const EditProduct = () => {
                 className="w-full border border-gray-300 rounded-md px-4 py-2"
                 required
               />
+
             )}
           </div>
         ))}

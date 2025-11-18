@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 
 
 exports.registerUser = async (req, res) => {
-  const { userName, email, password, otp } = req.body;
+  const { userName, email, password, otp,isAdmin } = req.body;
 
   try {
     // Check if user already exists
@@ -34,7 +34,8 @@ exports.registerUser = async (req, res) => {
         userName,
         email,
         password: await generateHashedPassword(password),
-        isVerified: false
+        isVerified: false,
+        isAdmin:isAdmin
       });
 
       // Create OTP
