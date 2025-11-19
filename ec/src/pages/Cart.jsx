@@ -8,6 +8,105 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+
+
+  const handleIncreaseQuantity = async (productId) => {
+  try {
+    const res = await axios.post(
+                              "http://localhost:5000/api/cart/addToCart",
+                              {
+                                
+                                productId: productId,
+                                quantity: 1, // Default quantity
+                              },
+                              { withCredentials: true }
+                            );
+
+    
+                            
+
+    if (res.data.success) {
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product._id === productId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+      toast.success('Quantity increased.');
+    } else {
+      toast.error('not enough product in stock');
+    }
+  } catch (error) {
+    console.error('Error increasing quantity:', error);
+    toast.error('not enough product in stock.');
+  }
+};
+
+ const handleDecreaseQuantity = async (productId) => {
+  try {
+    // Find the current item
+    const currentItem = cartItems.find((item) => item.product._id === productId);
+
+    if (!currentItem) return;
+    console.log(currentItem)
+
+    if (currentItem.quantity === 1) {
+      // If quantity would go to 0 → remove from cart
+      const res = await axios.delete(
+        `http://localhost:5000/api/cart/removeFromCart/${productId}`,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        setCartItems((prevItems) =>
+          prevItems.filter((item) => item.product._id !== productId)
+        );
+        toast.success("Item removed from cart.");
+      } else {
+        toast.error(res.data.message || "Failed to remove item.");
+      }
+    } else {
+      // Otherwise just decrement
+      const res = await axios.post(
+        "http://localhost:5000/api/cart/addToCart",
+        { productId, quantity: -1 },
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.product._id === productId
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          )
+        );
+        toast.success("Quantity decreased.");
+      } else {
+        toast.error(res.data.message || "Failed to decrease quantity.");
+      }
+    }
+  } catch (error) {
+    console.error("Error decreasing quantity:", error.response?.data || error.message);
+    toast.error("Server error while updating quantity.");
+  }
+};
+  const getEffectivePrice = (product) => {
+  const now = new Date();
+  const hasDiscount =
+    product.discountPercentage > 0 &&
+    product.discountEndTime &&
+    new Date(product.discountEndTime) > now;
+
+  if (hasDiscount) {
+    const discountedPrice =
+      product.price * (1 - product.discountPercentage / 100);
+    return discountedPrice;
+  }
+  return product.price;
+};
+
   useEffect(() => {
     const fetchCart = async () => {
       try {
@@ -28,7 +127,7 @@ const Cart = () => {
       }
     };
     fetchCart();
-  }, [navigate]);
+  }, []);
 
   const handleRemoveFromCart = async (productId) => {
     try {
@@ -71,15 +170,30 @@ const Cart = () => {
         <h2 className="text-3xl font-bold text-gray-800 mb-6">Your Shopping Cart</h2>
         <div className="space-y-4">
           {cartItems.map((item) => (
-            <div key={item.product._id} className="flex items-center justify-between border-b pb-4">
+            <div key={item.product._id} className="flex items-center justify-between border-b pb-4 ">
               <div className="flex items-center space-x-4">
                 <img src={item.product.image} alt={item.product.title} className="w-20 h-20 object-cover rounded-md" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{item.product.title}</h3>
                   <p className="text-gray-600">Quantity: {item.quantity}</p>
  <p className="text-gray-600">In Stock: {item.product.quantity}</p>
-                  <p className="text-gray-800 font-medium">Price: ${item.product.price.toFixed(2)}</p>
+                  <p className="text-gray-800 font-medium">Price: ${getEffectivePrice(item.product).toFixed(2)}</p>
+                   <div className='flex gap-3 px-2 mt-3'>
+                    <button
+  onClick={() => handleIncreaseQuantity(item.product._id)}
+  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ml-2 text-xl"
+>
+  +
+</button>
+<button
+  onClick={() => handleDecreaseQuantity(item.product._id)}
+  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ml-2 text-xl"
+>
+  -
+</button>
                 </div>
+                </div>
+               
               </div>
               <button
                 onClick={() => handleRemoveFromCart(item.product._id)}
@@ -87,15 +201,42 @@ const Cart = () => {
               >
                 Remove
               </button>
+            
             </div>
           ))}
         </div>
         <div className="mt-6 text-right">
           <p className="text-xl font-bold text-gray-900">
-            Total: ${cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0).toFixed(2)}
+            Total: ${cartItems.reduce(
+      (acc, item) => acc + getEffectivePrice(item.product) * item.quantity,
+      0
+    )
+      .toFixed(2)}
           </p>
           <button
-            onClick={() => toast.info('Checkout functionality coming soon!')}
+            onClick={async () => {
+              try {
+                const res = await axios.post('http://localhost:5000/api/cart/checkOut', {
+                  cartItems,
+                }, {
+                  withCredentials: true,
+                })
+
+                if(res.data.success){
+                  await axios.delete('http://localhost:5000/api/cart/removeAll', {
+                    withCredentials: true,
+                  })
+                  setCartItems([])
+                  toast.success('Order placed successfully!')
+                  
+                }else{
+                  toast.error(res.data.message || 'Failed to place order.')
+                }
+
+              } catch (error) {
+                
+              }
+            }}
             className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300"
           >
             Proceed to Checkout

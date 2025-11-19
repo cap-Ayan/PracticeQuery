@@ -369,7 +369,8 @@ const Home = () => {
                     )}
                   </div>
                   <div className="flex gap-1.5">
-                    <button 
+                    {item.quantity > 0 ?(
+                      <button 
                       className="flex-1 bg-slate-900 hover:bg-black text-white px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
                        onClick={async (e) => {
                           e.stopPropagation();
@@ -402,6 +403,7 @@ const Home = () => {
                       Add to Cart
                     </button>
                   
+                    ):(<p className="text-red-500 font-medium ">Out of Stock</p>)}
                   </div>
                 </div>
               </div>
