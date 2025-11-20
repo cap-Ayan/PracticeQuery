@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useShopContext } from "../context/Context";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../redux/productSlice";
+import { fetchUser, logout } from "../redux/userSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -7,19 +9,20 @@ import VerificationBox from "../components/VerificationBox";
 import UnverifiedPopup from "../components/UnverifiedPopup";
 
 
-const Navbar = ({ user, setUser }) => {
+const Navbar = ({ user }) => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+
+  const dispatch = useDispatch();
 
   const handleLogout = async () => {
     try {
       await axios.delete(
         "http://localhost:5000/api/users/logout",
-        {},
         { withCredentials: true }
       );
-      setUser(null);
+      dispatch(logout());
       toast.success("Logout successful");
       navigate("/");
     } catch (error) {
@@ -190,52 +193,39 @@ const Navbar = ({ user, setUser }) => {
 };
 const Home = () => {
   const [showVerificationBox, setShowVerificationBox] = useState(false);
-  const allProducts = useShopContext();
-  const [products, setProducts] = useState(allProducts);
+  const dispatch = useDispatch();
+  const products = useSelector((state) => state.products.items);
+  const user = useSelector((state) => state.user.userInfo);
   const [page, setPage] = useState(1);
   const [limitPerPage, setLimitPerPage] = useState(5);
-  const [user, setUser] = useState({});
   const [reviewStats, setReviewStats] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
-   const [showUnverifiedPopup, setShowUnverifiedPopup] = useState(false);
+  const [showUnverifiedPopup, setShowUnverifiedPopup] = useState(false);
 
 
   // Sync context → local products
-  useEffect(() => {setProducts(allProducts)
-    console.log(allProducts)
-  }, [allProducts]);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const limit = params.get("limit");
+    dispatch(fetchProducts(limit));
+  }, [dispatch, location.search]);
 
   // Fetch user details using token
   useEffect(() => {
-    
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/users/getUser", {
-          withCredentials: true, // use cookies to send token
-        });
-        if (res.data.success) {
-          console.log(res.data.user)
-          setUser(res.data.user);
-          console.log(user)
-        }
-      } catch (err) {
-        console.log("User not logged in");
-      }
-    };
-    fetchUser();
-  }, []);
+    dispatch(fetchUser());
+  }, [dispatch]);
   useEffect(() => {
-  if (user && user.email) {
-    if (user.isVerified === false) {
-      setShowUnverifiedPopup(true);
-    } else {
-      setShowUnverifiedPopup(false);
+    if (user && user.email) {
+      if (user.isVerified === false) {
+        setShowUnverifiedPopup(true);
+      } else {
+        setShowUnverifiedPopup(false);
+      }
     }
-  }
-}, [user]);
+  }, [user]);
 
-  
+
 
   // Handle pagination query params
   useEffect(() => {
@@ -292,12 +282,12 @@ const Home = () => {
   return (
     <div>
       {/* Navbar */}
-      <Navbar user={user} setUser={setUser} />
+      <Navbar user={user} />
       {showVerificationBox && (
-           <VerificationBox email={user.email} setShowVerificationBox={setShowVerificationBox}/>
-        )}
+        <VerificationBox email={user.email} setShowVerificationBox={setShowVerificationBox} />
+      )}
 
-         {showUnverifiedPopup && (
+      {showUnverifiedPopup && (
         <UnverifiedPopup setShowUnverifiedPopup={setShowUnverifiedPopup} user={user} />
       )}
 
@@ -338,9 +328,8 @@ const Home = () => {
                     {Array.from({ length: 5 }, (_, i) => (
                       <span
                         key={i}
-                        className={`text-sm ${
-                          i < stars ? "text-slate-800" : "text-slate-300"
-                        } transition-colors`}
+                        className={`text-sm ${i < stars ? "text-slate-800" : "text-slate-300"
+                          } transition-colors`}
                       >
                         ★
                       </span>
@@ -354,7 +343,7 @@ const Home = () => {
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
                     {item.discountPercentage
- && item.discountPercentage> 0 && item.discountEndTime&& new Date(item.discountEndTime) > new Date() ? (
+                      && item.discountPercentage > 0 && item.discountEndTime && new Date(item.discountEndTime) > new Date() ? (
                       <>
                         <span className="text-xl font-bold text-red-600">
                           ${(item.price - (item.price * item.discountPercentage) / 100).toFixed(2)}
@@ -369,41 +358,44 @@ const Home = () => {
                     )}
                   </div>
                   <div className="flex gap-1.5">
-                    {item.quantity > 0 ?(
-                      <button 
-                      className="flex-1 bg-slate-900 hover:bg-black text-white px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
-                       onClick={async (e) => {
-                          e.stopPropagation();
-                          if (!user || !user._id) {
-                            toast.error("Please login to add items to cart.");
-                            navigate("/signin");
-                            return;
-                          }
-                          try {
-                            const res = await axios.post(
-                              "http://localhost:5000/api/cart/addToCart",
-                              {
-                                userId: user._id,
-                                productId: item._id,
-                                quantity: 1, // Default quantity
-                              },
-                              { withCredentials: true }
-                            );
-                            if (res.data.success) {
-                              toast.success("Item added to cart!");
-                            } else {
-                              toast.error(res.data.message || "Failed to add item to cart.");
+                    {item.quantity > 0 ? (
+                      <div className="flex flex-col w-full">
+                        <button
+                          className="flex-1 bg-slate-900 hover:bg-black text-white px-3 py-2 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!user || !user._id) {
+                              toast.error("Please login to add items to cart.");
+                              navigate("/signin");
+                              return;
                             }
-                          } catch (error) {
-                            console.error("Error adding to cart:", error);
-                            toast.error("Server error while adding item to cart.");
-                          }
-                        }}
-                    >
-                      Add to Cart
-                    </button>
-                  
-                    ):(<p className="text-red-500 font-medium ">Out of Stock</p>)}
+                            try {
+                              const res = await axios.post(
+                                "http://localhost:5000/api/cart/addToCart",
+                                {
+                                  userId: user._id,
+                                  productId: item._id,
+                                  quantity: 1, // Default quantity
+                                },
+                                { withCredentials: true }
+                              );
+                              if (res.data.success) {
+                                toast.success("Item added to cart!");
+                              } else {
+                                toast.error(res.data.message || "Failed to add item to cart.");
+                              }
+                            } catch (error) {
+                              console.error("Error adding to cart:", error);
+                              toast.error("Server error while adding item to cart.");
+                            }
+                          }}
+                        >
+                          Add to Cart
+                        </button>
+                        <span className="text-red-500/50 font-semibold">{item.quantity} products left</span>
+                      </div>
+
+                    ) : (<p className="text-red-500 font-medium ">Out of Stock</p>)}
                   </div>
                 </div>
               </div>
@@ -425,11 +417,10 @@ const Home = () => {
             <button
               key={index}
               onClick={() => setPage(index + 1)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                page === index + 1
-                  ? "bg-slate-900 text-white shadow-md scale-105"
-                  : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm hover:shadow"
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${page === index + 1
+                ? "bg-slate-900 text-white shadow-md scale-105"
+                : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm hover:shadow"
+                }`}
             >
               {index + 1}
             </button>
