@@ -19,7 +19,7 @@ const http = require('http');
 app.use(cors({
     origin: "http://localhost:5173",  // your React app URL
     credentials: true,                // allow cookies
-  }));
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -39,9 +39,9 @@ app.use('/api/products', productRoutes);
 
 app.use('/api/reviews', reiewRoutes);
 
-app.use('/api/users',userRoutes );
+app.use('/api/users', userRoutes);
 
- app.use("/api/cart", cartRoutes);
+app.use("/api/cart", cartRoutes);
 
 const server = http.createServer(app);
 

@@ -2,13 +2,21 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
-    const response = await axios.get("http://localhost:5000/api/users/getUser", {
-        withCredentials: true,
-    });
-    if (response.data.success) {
-        return response.data.user;
-    } else {
-        throw new Error("User not found");
+    try {
+        const response = await axios.get("http://localhost:5000/api/users/getUser", {
+            withCredentials: true,
+        });
+        if (response.data.success) {
+            return response.data.user;
+        } else {
+            return null; // User not found, return null instead of throwing
+        }
+    } catch (error) {
+        // Handle 401 or other errors gracefully - user is not logged in
+        if (error.response && error.response.status === 401) {
+            return null; // User not authenticated, return null
+        }
+        throw error; // Re-throw other errors
     }
 });
 

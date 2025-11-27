@@ -61,21 +61,13 @@ const Navbar = ({ user }) => {
             Home
           </button>
 
+
           <button
             onClick={() => navigate("/cart")}
             className="text-slate-600 hover:text-indigo-600 font-semibold text-sm uppercase tracking-wide transition-colors duration-200"
           >
             Cart
           </button>
-
-          {user && user.isAdmin && (
-            <button
-              onClick={() => navigate("/adminpnl")}
-              className="text-slate-600 hover:text-indigo-600 font-semibold text-sm uppercase tracking-wide transition-colors duration-200"
-            >
-              Dashboard
-            </button>
-          )}
 
 
           {/* Profile Section */}
@@ -198,6 +190,7 @@ const Home = () => {
   const [showVerificationBox, setShowVerificationBox] = useState(false);
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.items);
+
   const user = useSelector((state) => state.user.userInfo);
   const [page, setPage] = useState(1);
   const [limitPerPage, setLimitPerPage] = useState(8); // Increased limit for better grid view
@@ -206,6 +199,8 @@ const Home = () => {
   const navigate = useNavigate();
   const [showUnverifiedPopup, setShowUnverifiedPopup] = useState(false);
 
+
+  const [selectedBrand, setSelectedBrand] = useState("All");
 
   // Sync context → local products
   useEffect(() => {
@@ -239,48 +234,80 @@ const Home = () => {
     lp && setLimitPerPage(Number(lp));
   }, [location.search]);
 
-  const totalPages = Math.ceil(products.length / limitPerPage);
+  // Derive unique brands from product titles
+  const uniqueBrands = useMemo(() => {
+    const result = [];
+    const seen = new Set();
+
+    for (const p of products) {
+      const brandName = p.Brand?.name || "Generic";
+      const brandLogo = p.Brand?.image || null;
+
+      if (!seen.has(brandName)) {
+        seen.add(brandName);
+        result.push({ name: brandName, logo: brandLogo });
+      }
+    }
+
+    return [{ name: "All", logo: null }, ...result];
+  }, [products]);
+
+
+
+  // Filter products based on selected brand
+  const filteredProducts = useMemo(() => {
+    if (selectedBrand === "All") return products;
+    return products.filter(p => (p.Brand?.name || "Generic") === selectedBrand);
+  }, [products, selectedBrand]);
+
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [selectedBrand]);
+
+  const totalPages = Math.ceil(filteredProducts.length / limitPerPage);
 
   const currentItems = useMemo(() => {
     const startIndex = (page - 1) * limitPerPage;
     const endIndex = startIndex + limitPerPage;
-    return products.slice(startIndex, endIndex);
-  }, [products, page, limitPerPage]);
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, page, limitPerPage]);
 
   // Fetch reviews
-  useEffect(() => {
-    const fetchAllReviews = async () => {
-      try {
-        const stats = {};
+  // useEffect(() => {
+  //   const fetchAllReviews = async () => {
+  //     try {
+  //       const stats = {};
 
-        await Promise.all(
-          products.map(async (p) => {
-            const res = await axios.get(
-              `http://localhost:5000/api/reviews/getReviews/${p._id}`
-            );
-            const data = res.data;
-            if (data.success && data.reviews.length > 0) {
-              const avg =
-                data.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-                data.reviews.length;
-              stats[p._id] = {
-                avg: avg.toFixed(1),
-                count: data.reviews.length,
-              };
-            } else {
-              stats[p._id] = { avg: 0, count: 0 };
-            }
-          })
-        );
+  //       await Promise.all(
+  //         products.map(async (p) => {
+  //           const res = await axios.get(
+  //             `http://localhost:5000/api/reviews/getReviews/${p._id}`
+  //           );
+  //           const data = res.data;
+  //           if (data.success && data.reviews.length > 0) {
+  //             const avg =
+  //               data.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+  //               data.reviews.length;
+  //             stats[p._id] = {
+  //               avg: avg.toFixed(1),
+  //               count: data.reviews.length,
+  //             };
+  //           } else {
+  //             stats[p._id] = { avg: 0, count: 0 };
+  //           }
+  //         })
+  //       );
 
-        setReviewStats(stats);
-      } catch (err) {
-        console.error("Error fetching reviews:", err);
-      }
-    };
+  //       setReviewStats(stats);
+  //     } catch (err) {
+  //       console.error("Error fetching reviews:", err);
+  //     }
+  //   };
 
-    if (products.length > 0) fetchAllReviews();
-  }, [products]);
+  //   if (products.length > 0) fetchAllReviews();
+  // }, [products]);
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans">
@@ -320,11 +347,34 @@ const Home = () => {
 
       {/* Main content */}
       <div id="products-section" className="p-6 sm:p-8 max-w-7xl mx-auto py-16">
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
           <h2 className="text-3xl font-bold text-slate-900 animate-slide-in flex items-center gap-3">
             <span className="w-2 h-8 bg-indigo-600 rounded-full block"></span>
             Latest Products
           </h2>
+
+          {/* Brand Filter */}
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            {uniqueBrands.map((brand) => (
+              <button
+                key={brand.name}
+                onClick={() => setSelectedBrand(brand.name)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 border ${selectedBrand === brand.name
+                    ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+              >
+                {brand.logo && (
+                  <img
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="w-5 h-5 object-contain rounded-full bg-white"
+                  />
+                )}
+                {brand.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Product grid */}
@@ -335,14 +385,14 @@ const Home = () => {
 
             return (
               <div
-                key={item._id}
+                key={item.id}
                 className="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group animate-fade-in flex flex-col h-full"
                 style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => navigate(`/productdetails/${item._id}`)}
               >
                 <div className="relative overflow-hidden rounded-2xl mb-5 bg-slate-50 aspect-[4/3] flex items-center justify-center group-hover:bg-slate-100 transition-colors">
                   <img
-                    src={item.image}
+                    src={`http://localhost:3000/${item.image}`}
                     alt={item.title}
                     className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
                   />

@@ -52,7 +52,7 @@ exports.getProductById = (req, res) => {
                 res.status(500).json({ success: false, message: 'Error retrieving product', error });
             });
     } catch (error) {
-        res.status(500).json({success:false, message: 'Error retrieving product', error});
+        res.status(500).json({ success: false, message: 'Error retrieving product', error });
     }
 };
 
@@ -72,24 +72,24 @@ exports.deleteProduct = (req, res) => {
 };
 
 
-    exports.updateProduct = async (req, res) => {
-  const { id } = req.params;
-  const updateData = {};
-  const allowedFields = ['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime','quantity'];
-  allowedFields.forEach(field => {
-    if (req.body[field] !== undefined) {
-      updateData[field] = req.body[field];
-    }
-  });
+exports.updateProduct = async (req, res) => {
+    const { id } = req.params;
+    const updateData = {};
+    const allowedFields = ['title', 'price', 'description', 'category', 'image', 'discountPercentage', 'discountEndTime', 'quantity'];
+    allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+            updateData[field] = req.body[field];
+        }
+    });
 
-  try {
-    const updatedProduct = await product.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedProduct) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+    try {
+        const updatedProduct = await product.findByIdAndUpdate(id, updateData, { new: true });
+        if (!updatedProduct) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+        res.json({ success: true, message: 'Product updated successfully', product: updatedProduct });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error updating product', error });
     }
-    res.json({ success: true, message: 'Product updated successfully', product: updatedProduct });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error updating product', error });
-  }
 };
 
